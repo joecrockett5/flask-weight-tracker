@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 4286
 
 # Run the app with Gunicorn (use 4 worker processes for production)
-CMD ["gunicorn", "--bind", "0.0.0.0:4286", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:4286", "src.weight-tracker.app:app"]
