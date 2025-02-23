@@ -1,12 +1,16 @@
 import csv
-from datetime import date
+from datetime import date, timedelta
 
 import matplotlib.pyplot as plt
 import mpld3
 import pandas as pd
 from flask import Flask, redirect, render_template, request
 
-app = Flask(__name__, template_folder="../../templates")
+app = Flask(__name__, template_folder="../../templates", static_folder="../../static")
+
+WEIGHTS_FILE = "data/weights.csv"
+MIN_VIEW = 74.5
+MAX_VIEW = 82
 
 
 @app.route("/")
@@ -27,10 +31,10 @@ def add():
 
 
 def create_plot():
-    df = pd.read_csv("weights.csv", parse_dates=["date"])
+    df = pd.read_csv(WEIGHTS_FILE, parse_dates=["date"])
     df = df.sort_values("date")  # Ensure dates are sorted
 
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(4.5, 2.5))
     ax.plot(
         df["date"],
         df["weight"],
@@ -40,13 +44,21 @@ def create_plot():
         label="Weight (kg)",
     )
 
-    # Ensure first point starts at the leftmost part of the graph
-    if len(df) > 0:
-        ax.set_xlim(left=df["date"].min())  # Start x-axis at the first date
+    # Zoom y axis
+    ax.set_ylim(bottom=MIN_VIEW, top=MAX_VIEW)
 
     # Optional: Extend x-axis slightly for better visualization
-    elif len(df) > 1:
-        ax.set_xlim(left=df["date"].min(), right=df["date"].max())
+    if len(df) > 1:
+        ax.set_xlim(
+            left=df["date"].min() - timedelta(hours=12),
+            right=df["date"].max() + timedelta(hours=12),
+        )
+
+    # Ensure first point starts at the leftmost part of the graph
+    elif len(df) > 0:
+        ax.set_xlim(
+            left=df["date"].min() - timedelta(hours=12)
+        )  # Start x-axis at the first date
 
     # Formatting
     # ax.set_title("Weight Over Time")
@@ -62,10 +74,13 @@ def create_plot():
 def display():
     plot = create_plot()
 
-    with open("weights.csv", "r") as f:
+    with open(WEIGHTS_FILE, "r") as f:
         reader = csv.DictReader(f)
         data = [
-            {"date": date.fromisoformat(row["date"]), "weight": row["weight"]}
+            {
+                "date": date.fromisoformat(row["date"]),
+                "weight": f"{float(row["weight"]):.2f}",
+            }
             for row in reader
         ]
 
@@ -74,7 +89,7 @@ def display():
 
 @app.route("/delete/<date>")
 def delete(date: str):
-    with open("weights.csv", "r") as f:
+    with open(WEIGHTS_FILE, "r") as f:
         reader = csv.DictReader(f)
         data = list(reader)
 
