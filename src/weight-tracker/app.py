@@ -21,7 +21,7 @@ def index():
 @app.route("/add", methods=["POST"])
 def add():
     weight = request.form["weight"]
-    with open("weights.csv", "a") as f:
+    with open(WEIGHTS_FILE, "a") as f:
         writer = csv.DictWriter(f, fieldnames=["date", "weight"])
         writer.writerow(
             {"date": date.today(), "weight": weight.replace("+", ".").strip()}
@@ -98,7 +98,7 @@ def delete(date: str):
             data.pop(i)
             break
 
-    with open("weights.csv", "w") as f:
+    with open(WEIGHTS_FILE, "w") as f:
         writer = csv.DictWriter(f, fieldnames=["date", "weight"])
         writer.writeheader()
         for row in data:
