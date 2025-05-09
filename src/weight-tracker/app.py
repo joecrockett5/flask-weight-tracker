@@ -10,7 +10,7 @@ app = Flask(__name__, template_folder="../../templates", static_folder="../../st
 
 WEIGHTS_FILE = "data/weights.csv"
 MIN_VIEW = 74.5
-MAX_VIEW = 82
+MAX_VIEW = 86.5
 
 
 @app.route("/")
